@@ -1,4 +1,4 @@
-HELP.md
+git remote add origin git@github.com:wmxl/springdemo.gitHELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
