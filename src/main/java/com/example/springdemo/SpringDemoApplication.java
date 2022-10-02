@@ -19,5 +19,4 @@ public class SpringDemoApplication {
         return "Hello " + name;
     }
 
-
 }
