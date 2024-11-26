@@ -1,6 +1,7 @@
-package com.example.springdemo;
+package com.example.springdemo.antlr;
 
-import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import com.example.springdemo.Endpoint;
+import com.example.springdemo.Java8BaseListener;
 import com.example.springdemo.Java8Parser;
 import java.util.*;
 import java.util.regex.*;

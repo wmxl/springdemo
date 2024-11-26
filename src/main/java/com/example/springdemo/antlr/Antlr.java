@@ -1,12 +1,15 @@
-package com.example.springdemo;
+package com.example.springdemo.antlr;
 
+import com.example.springdemo.Endpoint;
+import com.example.springdemo.Java8Lexer;
+import com.example.springdemo.Java8Parser;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
-public class JavaParseMain {
+public class Antlr {
     public static void main(String[] args) {
         List<Endpoint> endpoints = new ArrayList<>();
         Map<String, String> constantsMap = new HashMap<>();
@@ -23,8 +26,7 @@ public class JavaParseMain {
 
             // Then parse the controller file
             System.out.println("\nParsing controller file...");
-            parseFile("src/main/java/com/example/springdemo/MomentTestController2.java", 
-                     new EndpointListener(endpoints, constantsMap));
+            parseFile("src/main/java/com/example/springdemo/MomentTestController2.java", new EndpointListener(endpoints, constantsMap));
 
             // Print results
             System.out.println("\nFound " + endpoints.size() + " endpoints:");

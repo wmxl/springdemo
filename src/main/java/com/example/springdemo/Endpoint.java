@@ -15,6 +15,4 @@ public class Endpoint {
     public String toString() {
         return String.format("Endpoint{method='%s', type='%s', path='%s'}", method, type, path);
     }
-
-    // Add getters and setters
 } 

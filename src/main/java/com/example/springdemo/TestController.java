@@ -18,7 +18,6 @@ public class TestController {
     Good good;
     @Autowired
     Excellent excellent;
-
     @Autowired
     private List<Rating> ratings;
 
@@ -29,13 +28,9 @@ public class TestController {
         log.info("good = " + good.getRating());
         log.info("excellent = " + excellent.getRating());
 
-
         for (Rating rating : ratings) {
             log.info("rating.getRating()" + rating.getRating());
         }
-
-
-
 
         return "test controller ";
     }

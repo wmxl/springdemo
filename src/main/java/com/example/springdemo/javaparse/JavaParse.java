@@ -1,5 +1,6 @@
-package com.example.springdemo;
+package com.example.springdemo.javaparse;
 
+import com.example.springdemo.Endpoint;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -12,17 +13,92 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+
 public class JavaParse {
     private static Map<String, String> constantsMap = new HashMap<>();
-
+    private static final String REPO_URL = "https://github.com/wmxl/springdemo.git";
+    private static final String LOCAL_PATH = "/Users/admin/IdeaProjects/download";
 
     public static void main(String[] args) {
         List<Endpoint> endpoints = new ArrayList<>();
         try {
-            parseConstants("src/main/java/com/example/springdemo/web/config/MomentUrlConfig.java");
-
-            CompilationUnit compilationUnit = StaticJavaParser.parse(new File("src/main/java/com/example/springdemo/MomentTestController2.java"));
+            // Clone the repository
+            cloneRepository();
             
+            // Find and parse all Java files in the repository
+            File repoDir = new File(LOCAL_PATH);
+            List<File> javaFiles = findJavaFiles(repoDir);
+            
+            // Parse constants first (assuming MomentUrlConfig exists in the repo)
+            parseConstants(LOCAL_PATH + "/src/main/java/com/example/springdemo/web/config/MomentUrlConfig.java");
+
+            // Parse each controller file
+            for (File file : javaFiles) {
+                parseControllerFile(file, endpoints);
+            }
+
+            System.out.println("Found " + endpoints.size() + " endpoints:");
+            endpoints.forEach(endpoint -> {
+                System.out.println("Method: " + endpoint.method);
+                System.out.println("Type: " + endpoint.type);
+                System.out.println("Path: " + endpoint.path);
+                System.out.println("-------------------");
+            });
+
+        } catch (GitAPIException e) {
+            System.err.println("Git operation failed: " + e.getMessage());
+        } catch (FileNotFoundException e) {
+            System.err.println("Could not find file: " + e.getMessage());
+        }
+    }
+
+    private static void cloneRepository() throws GitAPIException {
+        File directory = new File(LOCAL_PATH);
+        if (directory.exists()) {
+            // Delete the existing directory
+            deleteDirectory(directory);
+        }
+        
+        Git.cloneRepository()
+           .setURI(REPO_URL)
+           .setDirectory(directory)
+           .call();
+    }
+
+    // Helper method to recursively delete a directory
+    private static void deleteDirectory(File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        directory.delete();
+    }
+
+    private static List<File> findJavaFiles(File dir) {
+        List<File> javaFiles = new ArrayList<>();
+        if (dir.isDirectory()) {
+            for (File file : dir.listFiles()) {
+                if (file.isDirectory()) {
+                    javaFiles.addAll(findJavaFiles(file));
+                } else if (file.getName().endsWith(".java")) {
+                    javaFiles.add(file);
+                }
+            }
+        }
+        return javaFiles;
+    }
+
+    private static void parseControllerFile(File file, List<Endpoint> endpoints) {
+        try {
+            CompilationUnit compilationUnit = StaticJavaParser.parse(file);
             compilationUnit.findAll(ClassOrInterfaceDeclaration.class).forEach(classDecl -> {
                 boolean isController = classDecl.getAnnotations().stream()
                         .anyMatch(a -> a.getNameAsString().equals("Controller") || 
@@ -47,17 +123,8 @@ public class JavaParse {
                     });
                 }
             });
-
-            System.out.println("Found " + endpoints.size() + " endpoints:");
-            endpoints.forEach(endpoint -> {
-                System.out.println("Method: " + endpoint.method);
-                System.out.println("Type: " + endpoint.type);
-                System.out.println("Path: " + endpoint.path);
-                System.out.println("-------------------");
-            });
-
         } catch (FileNotFoundException e) {
-            System.err.println("Could not find file: " + e.getMessage());
+            System.err.println("Error parsing file " + file.getName() + ": " + e.getMessage());
         }
     }
 
